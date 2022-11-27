@@ -16,7 +16,7 @@ CS144/sponge 项目，实现TCP。
 
 我先用 wsl2 试了一下，没有成功。事实证明 使用镜像文件 是最省事的方案。（虽然需要下载大概1.5G。）
 
-IDE 我用的 Clion，Cmake + Remote Deployment 同步文件和dubug非常方便。 
+IDE 我用的 Clion，Cmake + Remote Deployment 同步文件和debug非常方便。 
 
 我的具体做法：
 
@@ -35,15 +35,12 @@ IDE 我用的 Clion，Cmake + Remote Deployment 同步文件和dubug非常方便
 
 
 
-> 写得比较简单。但如果是第一次搭建环境，会遇到许多问题。自己慢慢摸索会学到很多，有疑问google即可。
 
 > 虚拟机内部网速慢的问题：
 >
 > [VirtualBox 虚拟机里网络很慢的解决方法 - Python List (pylist.com)](https://pylist.com/topic/175.html)
 >
-> 安装VirtualBox安装目录中。
->
-> 执行如下代码：
+> 在安装VirtualBox安装目录中执行如下代码：
 >
 > ```bash
 > ./VBoxManage.exe modifyvm cs144_vm --natdnshostresolver1 on
@@ -76,7 +73,9 @@ make check_lab0
 
 进入 `sponge/tests` 中，找到对应的测试文件，然后用 Clion debug。
 
-可能有部分 test.cc 显示 `This file does not belong to any project;...`, 如 `tests/fsm_retx.cc`：去 `/tests/CmakeList.cmake` 添加 `add_test_exec (fsm_retx)` 即可。
+可能有部分 test.cc 显示 `This file does not belong to any project;...`, 如 `tests/fsm_retx.cc`。
+
+Solution: 去 `/tests/CmakeList.cmake` 添加 `add_test_exec (fsm_retx)` 即可。
 
 （这就是为什么要学一点 Cmake）
 
@@ -84,7 +83,7 @@ make check_lab0
 
 ## 实验总体结构
 
-![demo](https://joiy908.oss-cn-beijing.aliyuncs.com/img/20221107124904.jpg)
+<img src="https://joiy908.oss-cn-beijing.aliyuncs.com/img/20221107124904.jpg" alt="demo" style="zoom:80%;" />
 
 从 Lab1 到 Lab4，我们将会实现 TCP, 也就是 `TCPSocket`。如上图所示，`TCPSocket` 内部操作封装的 `TCPConnection`, 后者有操纵 `TCPSender` 和 `TCPReceiver`, 他们内部用到 `ByteStream` 这个数据结构。`TCPReceiver` 内部比 `TCPSender` 多了一个 `StreamReassembler` 用来缓存“后发先至”的 segment。
 
