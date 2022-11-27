@@ -83,7 +83,7 @@ Solution: 去 `/tests/CmakeList.cmake` 添加 `add_test_exec (fsm_retx)` 即可�
 
 ## 实验总体结构
 
-<img src="https://joiy908.oss-cn-beijing.aliyuncs.com/img/20221107124904.jpg" alt="demo" style="zoom:80%;" />
+<img src=".images/20221107124904.jpg" alt="demo" style="zoom:80%;" />
 
 从 Lab1 到 Lab4，我们将会实现 TCP, 也就是 `TCPSocket`。如上图所示，`TCPSocket` 内部操作封装的 `TCPConnection`, 后者有操纵 `TCPSender` 和 `TCPReceiver`, 他们内部用到 `ByteStream` 这个数据结构。`TCPReceiver` 内部比 `TCPSender` 多了一个 `StreamReassembler` 用来缓存“后发先至”的 segment。
 
