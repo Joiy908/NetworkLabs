@@ -8,6 +8,10 @@ CS144/sponge 项目，实现TCP。
 
 > 如果没用过 cmake，强烈建议去学一下，只要了解最基础的概念即可。否则可能会不知道如何处理一些bug。
 
+note: 一下所有经验，来源于我做的版本（2022-10左右），官方会不断更新，建议采用最新版。
+
+这个仓库也有我做的这个版本的备份。
+
 # setup env
 
 参考官方文档即可: [Setting up your CS144 VM using VirtualBox (stanford.edu)](https://stanford.edu/class/cs144/vm_howto/vm-howto-image.html)
@@ -109,7 +113,7 @@ Solution: 去 `/tests/CmakeList.cmake` 添加 `add_test_exec (fsm_retx)` 即可�
 - [CS自学指南 (csdiy.wiki)](https://csdiy.wiki/)
 - 参考链接的链接:-x
 
-# lab0 webget, ByteStream
+# Lab0 webget, ByteStream
 
 [lab0.pdf (cs144.github.io)](https://cs144.github.io/assignments/lab0.pdf)
 
@@ -153,7 +157,68 @@ check_webget 可能报错：
 
 ## 2 ByteStream
 
+这个没有太多要注意的，仔细读官方提供的材料，选择一个合适的数据结构即可。
+
+因为C++ 没有 `byte` type, 用 `char` 表示。
+
+`eof` 和 `input_ended` 是两种状态。
+
+# Lab1 Reaasembler
+
+> 注意: 课程并不是一开始提供整个代码框架，而是一点一点暴露。
+>
+> 切换到Lab2，应该用 `git merge`.
+
+Reaasembler 是 Receiver 的一部分，用来缓存哪些后发先至的 segment。
+
+在这里实现后，写Receiver时任务就少一些。
+
+ 
+
+这张图很重要:
+<img src=".images/20221107114515.png" alt="demo" style="zoom: 50%;" />
 
 
 
+当 Receiver 收到 segment 之后，会传给 `Reassembler`, 由其进行顺序整理，讲有序 data 放入 `ByteStream`（上图中绿色的部分），顺序错乱的 data 放入 `Reassembler` 的 buffer 中保存。（红色的部分）。
+
+如果 data 的 index，是已经在 `ByteStream` 中的(上图蓝的部分) 或 其 index 超过了 `Reassembler` 的容量（上图中 `first unacceptable` 之后的），那 `Reassembler` 就把他们丢弃。
+
+
+
+`StreamReassembler`的核心方法是`push_substring(const string &data, const size_t index, const bool eof)`.
+
+它的主要任务是：
+
+- 根据 index，把`data`, 放入上图中的合适位置（可能丢弃）。
+
+这也不太复杂，难点是 要假设：这些不能保证顺序的 data 可能会 互相重叠！这是我在 *Computer Networking A Top-Down Approach* 中，没有读到的。一开始我感到很奇怪，为什么 data 会重叠呢？
+
+其实这个问题在 `rassembler` 中就体现了，如果对方发来的信息由于我们的 `Receiver` 容量不够，我们接收了一些，丢弃了一些。然后回复对应的 `ack number`；等对方的 `sender` 重发时，可能会带着一部分我们已经 `ack` 的 data。 或者，由于 我们 `receive window` 发生变化，所以对方可能重发的时候用不同的 `window size`，导致了重叠。
+
+所以，我们应该监测并处理 overlap。
+
+如何处理呢？如果你有自己的想法，请去实践吧。如果没有，下面是我的做法：
+
+`if the data overlaps with old one, CUT IT!` 把重复的部分切掉。
+
+这就要枚举出 所有可能的情况并处理。 [Misaka](https://www.misaka-9982.com/) 画的图很清楚：[CS144-Lab1: stitching substrings into a byte stream | Misaka's blog (misaka-9982.com)](https://www.misaka-9982.com/2022/01/25/CS144-Lab1/)
+
+
+
+然后就是课程文档中说
+
+> *How should inconsistent substrings be handled? You may assume that they don’t exist. That is, you can assume that there is a unique underlying byte-stream, and all substrings are (accurate) slices of it.*
+
+我的理解是，会有 overlap，但overlap的数据都一样，不会前后不一致。
+
+但测试中出现了前后不一致的情况。要采用新的 overlap 的部分才能通过测试。
+
+# Lab2 Receiver
+
+前面的 `reassembler` 处理 Receiver 的好多工作，所以这个 lab 的代码量就没多少了。
+
+
+
+here
 
