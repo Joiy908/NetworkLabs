@@ -163,7 +163,7 @@ check_webget 可能报错：
   ZZ
   
   # 加上x权限
-  chmod +x tests/webget_t.sh
+  chmod +x stests/webget_t.sh
   ```
 
 - 网速问题：虚拟机内部网速比宿主机慢。-> 见上面 setup env。
@@ -346,13 +346,13 @@ Notes:
 
 
 
-3 有 double timeout 机制。不用实现 fast-restransmit!!!, 这整个实验不要求收到三个相同的 ackno 后立即重发 base segment.:cry:
+3 有 double timeout 机制。**不用实现 fast-restransmit!!!**, 这整个实验不要求收到三个相同的 ackno 后立即重发 base segment.:cry:
 
 如果你实现了，有一些测试会通不过的。特别是 lab4 中的 `fsm_loopback.cc` 。
 
 
 
-4 推荐多写些 helper method/class, 把一些逻辑封装起来。尽管可能会产生额外的 stack cost, 但在debug 时会更容易，代码复用也方便后面改动代码。（而且compiler 还会帮我们把一些函数`inline` ）
+4 推荐多写些 helper method/class, 把一些逻辑封装起来。尽管可能会产生额外的 stack cost, 但在debug 时会更容易，代码复用也方便后面改动代码。（compiler 会帮我们把一些函数`inline`化 ）
 
 # Lab4 Connection
 

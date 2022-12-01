@@ -18,14 +18,14 @@ void get_URL(const string &host, const string &path) {
     // the "eof" (end of file).
     Address address(host, "http");
     TCPSocket socket;
-    // 和服务器连接
+    // connect server
     socket.connect(address);
     // request
     socket.write("GET " + path + " HTTP/1.1\r\n");
     socket.write("HOST: " + host + "\r\n" + "\r\n");
-    // request结束
+    // local peer shutdown
     socket.shutdown(SHUT_WR);
-    // content
+    // print contents
     while (!socket.eof()) {
         std::cout << socket.read(1);
     }
