@@ -5,15 +5,37 @@
 
 #include <cstdint>
 #include <string>
+#include <map>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
+    size_t _exIdx{0}; // expected index (first unassembled byte index
+    std::map<size_t, std::string> _unassembledStrs{};
+    size_t _unassembledSize{0}; // unit: byte
+
+    bool _eofSignRecv{false};
+    size_t _eofIdx{0};
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+
+    /* helper method: */
+
+    // handle overlap, how? cut the string!
+    // this may modify _unassembledStrs, so is not const
+    //! \return {drop, newIdx}
+    std::pair<bool,size_t> cutData(size_t idx, std::string& data);
+
+    //! \brief get the first element in _unassembledStrs that >= idx,
+    //! \return itr points to element if found, else return _unassembledStrs.end()
+    std::map<size_t, std::string>::iterator getBackItr(size_t idx);
+
+    //! \brief get the first element in _unassembledStrs that <= idx,
+    //! \return itr points to element if found, else return _unassembledStrs.end()
+    std::map<size_t, std::string>::iterator getFrontItr(size_t idx);
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
