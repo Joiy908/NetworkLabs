@@ -21,7 +21,84 @@ class TCPConnection {
     //! in case the remote TCPConnection doesn't know we've received its whole stream?
     bool _linger_after_streams_finish{true};
 
+    std::queue<TCPSegment> &_segQueueFromSender{_sender.segments_out()};
+    bool _active{true};
+    size_t _time_since_last_segment_received{0};
+
+    bool _time_wait{false};
   public:
+    // helper methods
+
+    // when rst occurs
+    void uncleanShutdown() {
+        _sender.stream_in().set_error();
+        _receiver.stream_out().set_error();
+        _active = false;
+    }
+
+    void cleanShutdown() {
+        _active = false;
+    }
+
+    // push segs in _segQueueFromSender to _segments_out
+    void updateOutput() {
+        while (!_segQueueFromSender.empty()) {
+            TCPSegment& seg = _segQueueFromSender.front();
+            // if it can carry ack, do it
+            if (!seg.header().rst && _receiver.ackno().has_value()) {
+                TCPHeader& h  = seg.header();
+                h.ack = true;
+                h.ackno = _receiver.ackno().value();
+                h.win = _receiver.window_size();
+            }
+            _segments_out.push(seg);
+            _segQueueFromSender.pop();
+        }
+    }
+    void sendRSTSeg() {
+        if (!_segments_out.empty()) {
+            // get first seg-sqn and make a rst-seg by send_empty_seg,
+            // and seg the rst-seg with right sqn
+            WrappingInt32 sqn = _segments_out.front().header().seqno;
+            cleanSegQueue(_segments_out);
+            cleanSegQueue(_segQueueFromSender);
+            _sender.send_empty_segment();
+            _segQueueFromSender.front().header().seqno = sqn;
+            _segQueueFromSender.front().header().rst = true;
+            updateOutput();
+            return ;
+        }
+        // else: _segments_out.empty() && !_segQueueFromSender.empty()
+        if (!_segQueueFromSender.empty()) {
+            WrappingInt32 sqn = _segQueueFromSender.front().header().seqno;
+            cleanSegQueue(_segQueueFromSender);
+            _sender.send_empty_segment();
+            _segQueueFromSender.front().header().seqno = sqn;
+            _segQueueFromSender.front().header().rst = true;
+            updateOutput();
+            return ;
+        }
+        // else: _segments_out.empty() && _segQueueFromSender.empty()
+        _sender.send_empty_segment();
+        _segQueueFromSender.back().header().rst = true;
+        updateOutput();
+    }
+
+    void cleanSegQueue(std::queue<TCPSegment> & queue) {
+        while (!queue.empty()) {
+            queue.pop();
+        }
+    }
+
+    // status helpers
+    bool receiver_in_listen() {
+        return !_receiver.ackno().has_value();
+    }
+    bool receiver_FIN_recv() {
+        return _receiver.stream_out().input_ended();
+    }
+
+
     //! \name "Input" interface for the writer
     //!@{
 

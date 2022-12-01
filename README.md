@@ -47,7 +47,7 @@ IDE 我用的 Clion，Cmake + Remote Deployment 同步文件和debug非常方便
 > 在安装VirtualBox安装目录中执行如下代码：
 >
 > ```bash
-> ./VBoxManage.exe modifyvm cs144_vm --natdnshostresolver1 on
+> ./VBoxManage.exe modifyvm cs144_vm --natdnshostresolver1 on 
 > ./VBoxManage.exe modifyvm cs144_vm --natdnsproxy1 on
 > ```
 >
@@ -163,7 +163,7 @@ check_webget 可能报错：
   ZZ
   
   # 加上x权限
-  chmod +x stests/webget_t.sh
+  chmod +x sponge/tests/webget_t.sh
   ```
 
 - 网速问题：虚拟机内部网速比宿主机慢。-> 见上面 setup env。
@@ -396,7 +396,13 @@ Notes:
 
 然后，TCP实验就完成了！
 
-注意，在测试速度时要用`release` 编译，优化后的代码比 `debug` 的代码性能提升很多。
+注意，
+
+1 如果出现`BAD_COMMAND` ，还是由于 `.sh` 的格式和权限问题，解决方式见 上面`lab0`。
+
+2 在测试速度时要用`release` 编译，优化后的代码比 `debug` 的代码性能提升很多。
+
+`CXX=g++-8 cmake .. -DCMAKE_BUILD_TYPE=Release`
 
 ```bash
 cs144@cs144vm:~/sponge/cmake-build-debug-remote-host$ ./apps/tcp_benchmark
