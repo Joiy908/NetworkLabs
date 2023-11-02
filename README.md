@@ -416,6 +416,8 @@ CPU-limited throughput                : 2.11 Gbit/s
 CPU-limited throughput with reordering: 1.94 Gbit/s
 ```
 
+> ByteStream 选择 `BufferList` 作为缓存，要比`Deque<char>` 快一些。
+
 # Lab5
 
 here
